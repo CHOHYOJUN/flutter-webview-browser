@@ -11,6 +11,8 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
+  late WebViewController _webViewController;
+
   @override
   void initState() {
     super.initState();
@@ -29,9 +31,9 @@ class _MainScreenState extends State<MainScreen> {
           ),
           // +   ,  Icons.more_vert 햄버거 아이콘
           PopupMenuButton<String>(
-            onSelected: (value){
-              print(value);
-            },
+              onSelected: (value) {
+                _webViewController.loadUrl(value);
+              },
               itemBuilder: (context) => [
                     const PopupMenuItem(
                         value: 'https://google.com',
@@ -42,12 +44,30 @@ class _MainScreenState extends State<MainScreen> {
                         value: 'https://naver.com',
                         child: Text(
                           '네이버',
+                        )),
+                    const PopupMenuItem(
+                        value: 'https://kakao.com',
+                        child: Text(
+                          '카카오',
                         ))
                   ]),
         ],
       ),
-      body: const WebView(
-        initialUrl: 'https://www.naver.com',
+      body: WillPopScope( // 뒤로가기 허용
+        onWillPop: () async {
+          if (await _webViewController.canGoBack()) { //  뒤로 갈 수 있는 지 여부 확인
+            await _webViewController.goBack();
+            return false;
+          }
+          return true;
+        },
+        child: WebView(
+          initialUrl: 'https://flutter.dev',
+          javascriptMode: JavascriptMode.unrestricted, // 자바스크립트 허용
+          onWebViewCreated: (controller) {
+            _webViewController = controller;
+          },
+        ),
       ),
     );
   }
